@@ -25,7 +25,7 @@ export default async function ReviewPage({
 
   const { data: client } = await supabase
     .from('clients')
-    .select('naam')
+    .select('naam, telegram_chat_id')
     .eq('id', item.client_id)
     .single()
 
@@ -108,6 +108,9 @@ export default async function ReviewPage({
           itemId={item.id}
           clientId={item.client_id}
           currentStatus={item.status}
+          itemTitle={item.title}
+          clientNaam={client?.naam || ''}
+          telegramChatId={client?.telegram_chat_id || null}
         />
       </main>
     </div>

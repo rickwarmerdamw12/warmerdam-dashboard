@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import Header from '@/components/Header'
 import StatusBadge from '@/components/StatusBadge'
 import { ClientWithServices, ContentStatus } from '@/types'
+import DashboardClient from './DashboardClient'
 
 function getStatusCount(items: { status: string }[], status: ContentStatus) {
   return items.filter(i => i.status === status).length
@@ -83,7 +84,10 @@ export default async function DashboardPage() {
         {/* Clients Grid */}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">Klanten</h2>
-          <span className="text-slate-500 text-sm">{totalClients} totaal</span>
+          <div className="flex items-center gap-3">
+            <span className="text-slate-500 text-sm">{totalClients} totaal</span>
+            <DashboardClient />
+          </div>
         </div>
 
         {typedClients.length === 0 ? (

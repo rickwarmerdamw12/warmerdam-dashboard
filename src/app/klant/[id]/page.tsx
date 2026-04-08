@@ -3,7 +3,9 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import Header from '@/components/Header'
 import StatusBadge from '@/components/StatusBadge'
-import { ContentStatus } from '@/types'
+import { ClientService, ContentStatus } from '@/types'
+import ServicesSection from './ServicesSection'
+import NieuweContentModal from './NieuweContentModal'
 
 const statusTabs: { value: ContentStatus | 'alle'; label: string }[] = [
   { value: 'alle', label: 'Alle' },
@@ -48,6 +50,12 @@ export default async function KlantPage({
   }
 
   const { data: contentItems } = await query
+
+  const { data: clientServices } = await supabase
+    .from('client_services')
+    .select('*')
+    .eq('client_id', id)
+    .order('created_at', { ascending: true })
 
   const { data: allItems } = await supabase
     .from('content_items')
@@ -101,6 +109,18 @@ export default async function KlantPage({
               </span>
             )}
           </div>
+        </div>
+
+        {/* Services Section */}
+        <ServicesSection
+          clientId={id}
+          initialServices={(clientServices || []) as ClientService[]}
+        />
+
+        {/* New Content Button */}
+        <div className="mb-5 flex items-center justify-between">
+          <div /> {/* spacer */}
+          <NieuweContentModal clientId={id} />
         </div>
 
         {/* Status Tabs */}

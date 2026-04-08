@@ -9,9 +9,12 @@ interface ReviewActionsProps {
   itemId: string
   clientId: string
   currentStatus: ContentStatus
+  itemTitle: string
+  clientNaam: string
+  telegramChatId: string | null
 }
 
-export default function ReviewActions({ itemId, clientId, currentStatus }: ReviewActionsProps) {
+export default function ReviewActions({ itemId, clientId, currentStatus, itemTitle, clientNaam, telegramChatId }: ReviewActionsProps) {
   const router = useRouter()
   const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
   const [showRejectForm, setShowRejectForm] = useState(false)
@@ -26,6 +29,21 @@ export default function ReviewActions({ itemId, clientId, currentStatus }: Revie
       .from('content_items')
       .update({ status: 'goedgekeurd', feedback: null })
       .eq('id', itemId)
+
+    // Fire-and-forget Telegram notification
+    if (telegramChatId) {
+      fetch('/api/notify-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          title: itemTitle,
+          client_naam: clientNaam,
+        }),
+      }).catch(() => {
+        // Ignore errors — notification is best-effort
+      })
+    }
 
     router.push(`/klant/${clientId}`)
     router.refresh()

@@ -47,6 +47,15 @@ export default function Header({ title, backHref, backLabel }: HeaderProps) {
           </div>
         </div>
 
+        <nav className="hidden sm:flex items-center gap-1 mr-2">
+          <Link href="/contact-submissions" className="px-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 text-sm">
+            Contact
+          </Link>
+          <Link href="/blogs" className="px-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 text-sm">
+            Blogs
+          </Link>
+        </nav>
+
         <button
           onClick={handleLogout}
           className="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 text-sm"

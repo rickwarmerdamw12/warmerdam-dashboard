@@ -37,14 +37,17 @@ export default async function BlogDetailPage({
       })
     : null
 
+  const backHref = blog.client_id ? `/klant/${blog.client_id}?tab=blogs` : '/dashboard'
+  const backLabel = blog.client_id ? 'Blogs' : 'Dashboard'
+
   return (
     <div className="min-h-screen bg-[#0F172A]">
-      <Header backHref="/blogs" backLabel="Blogs" />
+      <Header backHref={backHref} backLabel={backLabel} />
 
       <main className="max-w-3xl mx-auto px-4 py-6 pb-20">
         {/* Back button */}
         <Link
-          href="/blogs"
+          href={backHref}
           className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm mb-6"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

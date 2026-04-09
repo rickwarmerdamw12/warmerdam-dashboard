@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import RealtimeNotifier from "@/components/RealtimeNotifier";
 
 export const metadata: Metadata = {
   title: "Warmerdam Consulting - Dashboard",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nl" className="h-full">
-      <body className="min-h-full bg-[#0F172A] text-white">{children}</body>
+      <body className="min-h-full bg-[#0F172A] text-white">
+        {children}
+        <RealtimeNotifier />
+      </body>
     </html>
   );
 }

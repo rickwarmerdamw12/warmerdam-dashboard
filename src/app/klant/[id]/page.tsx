@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import Header from '@/components/Header'
 import StatusBadge from '@/components/StatusBadge'
-import { ClientService, ContentStatus } from '@/types'
+import { ClientService, ContentStatus, GscInspection } from '@/types'
 import ServicesSection from './ServicesSection'
 import NieuweContentModal from './NieuweContentModal'
 import MarkGelezenButton from './MarkGelezenButton'
@@ -18,9 +18,16 @@ const statusTabs: { value: ContentStatus | 'alle'; label: string }[] = [
 
 const mainTabs = [
   { value: 'content', label: 'Content' },
+  { value: 'seo', label: 'SEO' },
   { value: 'services', label: 'Services' },
   { value: 'blogs', label: 'Blogs' },
   { value: 'contacten', label: 'Contacten' },
+]
+
+const seoFilters: { value: 'alle' | 'indexed' | 'not-indexed'; label: string }[] = [
+  { value: 'alle', label: 'Alle' },
+  { value: 'indexed', label: 'Geïndexeerd' },
+  { value: 'not-indexed', label: 'Niet geïndexeerd' },
 ]
 
 export default async function KlantPage({
@@ -28,10 +35,10 @@ export default async function KlantPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ tab?: string; status?: string }>
+  searchParams: Promise<{ tab?: string; status?: string; seo?: string }>
 }) {
   const { id } = await params
-  const { tab, status } = await searchParams
+  const { tab, status, seo } = await searchParams
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -107,6 +114,44 @@ export default async function KlantPage({
       .eq('client_id', id)
       .order('created_at', { ascending: false })
     contactSubmissions = data
+  }
+
+  // SEO tab data — laatste GSC snapshot voor deze klant
+  let seoInspections: GscInspection[] | null = null
+  let seoLatestDate: string | null = null
+  let seoCounts = { alle: 0, indexed: 0, notIndexed: 0 }
+  const seoFilter = (seo as 'alle' | 'indexed' | 'not-indexed') || 'alle'
+  if (activeTab === 'seo') {
+    const { data: latest } = await supabase
+      .from('gsc_inspections')
+      .select('snapshot_date')
+      .eq('client_id', id)
+      .order('snapshot_date', { ascending: false })
+      .limit(1)
+    seoLatestDate = latest?.[0]?.snapshot_date ?? null
+
+    if (seoLatestDate) {
+      const { data: rows } = await supabase
+        .from('gsc_inspections')
+        .select('*')
+        .eq('client_id', id)
+        .eq('snapshot_date', seoLatestDate)
+        .order('verdict', { ascending: true })
+        .order('url', { ascending: true })
+      const all = (rows ?? []) as GscInspection[]
+      seoCounts = {
+        alle: all.length,
+        indexed: all.filter((r) => r.verdict === 'PASS').length,
+        notIndexed: all.filter((r) => r.verdict !== 'PASS').length,
+      }
+      if (seoFilter === 'indexed') {
+        seoInspections = all.filter((r) => r.verdict === 'PASS')
+      } else if (seoFilter === 'not-indexed') {
+        seoInspections = all.filter((r) => r.verdict !== 'PASS')
+      } else {
+        seoInspections = all
+      }
+    }
   }
 
   return (
@@ -275,6 +320,156 @@ export default async function KlantPage({
                   )
                 })}
               </div>
+            )}
+          </>
+        )}
+
+        {/* Tab: SEO */}
+        {activeTab === 'seo' && (
+          <>
+            {!client.gsc_property ? (
+              <div className="bg-[#1E293B] rounded-2xl p-8 border border-slate-700/50 text-center">
+                <svg className="w-12 h-12 mx-auto mb-3 opacity-30 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+                <p className="text-slate-300 font-medium mb-2">GSC nog niet ingesteld voor deze klant</p>
+                <p className="text-slate-500 text-sm mb-4 max-w-md mx-auto">
+                  Vul <code className="text-[#F59E0B] font-mono">gsc_property</code> en <code className="text-[#F59E0B] font-mono">sitemap_url</code> in op deze klant. Daarna pakt de dagelijkse cron (06:00) automatisch indexatie-data op via Google Search Console.
+                </p>
+                <pre className="inline-block text-left text-xs bg-[#0F172A] text-slate-400 rounded-lg p-3 border border-slate-700/50 font-mono">{`UPDATE clients SET
+  gsc_property = 'sc-domain:voorbeeld.nl',
+  sitemap_url  = 'https://voorbeeld.nl/sitemap.xml'
+WHERE id = '${id}';`}</pre>
+              </div>
+            ) : !seoLatestDate ? (
+              <div className="bg-[#1E293B] rounded-2xl p-8 border border-slate-700/50 text-center">
+                <svg className="w-12 h-12 mx-auto mb-3 opacity-30 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-slate-300 font-medium mb-1">Nog geen snapshot beschikbaar</p>
+                <p className="text-slate-500 text-sm">
+                  GSC property: <code className="text-[#F59E0B] font-mono">{client.gsc_property}</code>
+                </p>
+                <p className="text-slate-500 text-sm mt-2">
+                  De cron draait dagelijks om 06:00. Of run nu handmatig:
+                </p>
+                <pre className="inline-block text-left text-xs bg-[#0F172A] text-slate-400 rounded-lg p-3 border border-slate-700/50 font-mono mt-3">{`~/warmerdam/.venv-agent/bin/python3 \\
+  ~/warmerdam/gsc/inspect.py \\
+  --client-id ${id}`}</pre>
+              </div>
+            ) : (
+              <>
+                {/* Summary card */}
+                <div className="bg-[#1E293B] rounded-2xl p-5 border border-slate-700/50 mb-5">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Indexatie status</div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-bold text-white">{seoCounts.indexed}</span>
+                        <span className="text-lg text-slate-400">/ {seoCounts.alle}</span>
+                        <span className="text-sm text-slate-500 ml-1">geïndexeerd</span>
+                      </div>
+                      <div className="text-2xl font-bold text-[#F59E0B] mt-1">
+                        {seoCounts.alle > 0 ? Math.round((seoCounts.indexed / seoCounts.alle) * 1000) / 10 : 0}%
+                      </div>
+                    </div>
+                    <div className="text-right text-xs text-slate-500">
+                      <div>Snapshot</div>
+                      <div className="text-slate-300 font-medium">
+                        {new Date(seoLatestDate).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-slate-500 pt-3 border-t border-slate-700/50">
+                    <span>Property:</span>
+                    <code className="text-slate-300 font-mono">{client.gsc_property}</code>
+                  </div>
+                </div>
+
+                {/* Sub-Filter Tabs */}
+                <div className="flex gap-2 overflow-x-auto pb-2 mb-5 scrollbar-hide">
+                  {seoFilters.map((sf) => {
+                    const isActive = seoFilter === sf.value
+                    const count = sf.value === 'alle' ? seoCounts.alle : sf.value === 'indexed' ? seoCounts.indexed : seoCounts.notIndexed
+                    return (
+                      <Link
+                        key={sf.value}
+                        href={`/klant/${id}?tab=seo${sf.value !== 'alle' ? `&seo=${sf.value}` : ''}`}
+                        className={`shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 ${
+                          isActive
+                            ? 'bg-[#F59E0B] text-[#0F172A]'
+                            : 'bg-[#1E293B] text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700/50'
+                        }`}
+                      >
+                        {sf.label}
+                        <span className={`px-1.5 py-0.5 rounded-md text-xs font-semibold ${
+                          isActive ? 'bg-[#0F172A]/20 text-[#0F172A]' : 'bg-slate-700 text-slate-300'
+                        }`}>
+                          {count}
+                        </span>
+                      </Link>
+                    )
+                  })}
+                </div>
+
+                {/* URL list */}
+                {!seoInspections || seoInspections.length === 0 ? (
+                  <div className="text-center py-20 text-slate-500">
+                    <p>Geen URLs in deze categorie</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {seoInspections.map((row) => {
+                      const indexed = row.verdict === 'PASS'
+                      const lastCrawl = row.last_crawl_time
+                        ? new Date(row.last_crawl_time).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })
+                        : null
+                      const path = row.url.replace(/^https?:\/\/[^/]+/, '') || '/'
+                      return (
+                        <div
+                          key={row.id}
+                          className="bg-[#1E293B] rounded-xl p-4 border border-slate-700/50 hover:border-[#F59E0B]/40 transition-all duration-200"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <a
+                                href={row.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-white hover:text-[#F59E0B] transition-colors font-mono break-all"
+                              >
+                                {path}
+                              </a>
+                              <div className="flex items-center gap-2 mt-1.5 text-xs text-slate-500 flex-wrap">
+                                {row.coverage_state && <span>{row.coverage_state}</span>}
+                                {lastCrawl && (
+                                  <>
+                                    <span>·</span>
+                                    <span>laatst gecrawld {lastCrawl}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <div className="shrink-0">
+                              {indexed ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                  Geïndexeerd
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                                  Niet
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

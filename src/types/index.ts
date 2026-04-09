@@ -1,4 +1,17 @@
 export type ContentStatus = 'concept' | 'in_review' | 'goedgekeurd' | 'gepubliceerd'
+export type TaskStatus = 'moet_gebeuren' | 'mee_bezig' | 'klaar'
+
+export interface Task {
+  id: string
+  client_id: string
+  title: string
+  status: TaskStatus
+  position: number
+  due_date: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
 
 export interface Client {
   id: string

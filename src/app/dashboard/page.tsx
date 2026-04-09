@@ -5,6 +5,7 @@ import Header from '@/components/Header'
 import StatusBadge from '@/components/StatusBadge'
 import { ClientWithServices, ContentStatus } from '@/types'
 import DashboardClient from './DashboardClient'
+import BottomNav from '@/components/BottomNav'
 
 function getStatusCount(items: { status: string }[], status: ContentStatus) {
   return items.filter(i => i.status === status).length
@@ -181,6 +182,7 @@ export default async function DashboardPage() {
           </div>
         )}
       </main>
+      <BottomNav active="dashboard" />
     </div>
   )
 }

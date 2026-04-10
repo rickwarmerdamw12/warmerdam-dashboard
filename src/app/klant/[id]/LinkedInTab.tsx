@@ -60,16 +60,16 @@ export default function LinkedInTab({ clientId, initialInputs }: Props) {
     setGenerating(inputId)
     setError(null)
     try {
-      const res = await fetch('/api/generate-linkedin', {
+      // Call bridge directly from browser — bridge runs on same Mac as this browser session
+      const bridgeUrl = process.env.NEXT_PUBLIC_BRIDGE_URL || 'http://127.0.0.1:8787'
+      const res = await fetch(`${bridgeUrl}/generate-linkedin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ client_id: clientId, input_id: inputId }),
       })
       const json = await res.json()
-      if (!res.ok || !json.ok) throw new Error(json.error || 'Genereren mislukt')
-      // Mark as processed in local state
+      if (!res.ok || !json.success) throw new Error(json.error || 'Genereren mislukt')
       setInputs((prev) => prev.map((i) => i.id === inputId ? { ...i, processed: true } : i))
-      // Redirect to content tab to see the new post
       router.push(`/klant/${clientId}?tab=content&status=concept`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Genereren mislukt')

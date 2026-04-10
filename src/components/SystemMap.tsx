@@ -1,6 +1,5 @@
 'use client'
 
-import { useMemo } from 'react'
 import {
   ReactFlow,
   Background,
@@ -329,7 +328,7 @@ export default function SystemMap() {
   const [edges, , onEdgesChange] = useEdgesState(EDGES_INIT)
 
   return (
-    <div className="w-full h-full relative">
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       {/* Legend */}
       <div className="absolute top-4 right-4 z-10 bg-[#0F172A]/90 border border-slate-800 rounded-xl px-4 py-3 space-y-2">
         <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Legenda</p>

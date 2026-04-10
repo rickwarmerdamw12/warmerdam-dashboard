@@ -3,7 +3,7 @@ import SystemMapLoader from '@/components/SystemMapLoader'
 
 export default function SysteemPage() {
   return (
-    <div className="min-h-screen bg-[#0F172A] flex flex-col pb-16">
+    <div className="bg-[#0F172A]" style={{ height: '100dvh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <div className="px-5 pt-6 pb-4 border-b border-slate-800 flex-shrink-0">
         <h1 className="text-xl font-bold text-white">Systeem overzicht</h1>
@@ -12,8 +12,8 @@ export default function SysteemPage() {
         </p>
       </div>
 
-      {/* Map canvas — vult de rest van het scherm */}
-      <div className="flex-1" style={{ height: 'calc(100vh - 120px)' }}>
+      {/* Map canvas — expliciete hoogte zodat ReactFlow iets heeft om op te renderen */}
+      <div style={{ flex: 1, minHeight: 0 }}>
         <SystemMapLoader />
       </div>
 

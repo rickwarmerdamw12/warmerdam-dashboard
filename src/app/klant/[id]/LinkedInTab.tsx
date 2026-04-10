@@ -23,7 +23,6 @@ interface Props {
 
 const BRIDGE_URL = process.env.NEXT_PUBLIC_BRIDGE_URL
 const MIN_LENGTH = 20
-const MAX_LENGTH = 5000
 
 export default function LinkedInTab({ clientId, initialInputs, loadError }: Props) {
   const router = useRouter()
@@ -38,12 +37,8 @@ export default function LinkedInTab({ clientId, initialInputs, loadError }: Prop
   const healthIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const charCount = rawText.length
-  const charCountValid = charCount >= MIN_LENGTH && charCount <= MAX_LENGTH
-  const charCountColor = charCount > MAX_LENGTH || (charCount > 0 && charCount < MIN_LENGTH)
-    ? 'text-red-400'
-    : charCount >= MIN_LENGTH
-      ? 'text-emerald-400'
-      : 'text-slate-500'
+  const charCountValid = charCount >= MIN_LENGTH
+  const charCountColor = charCount > 0 && charCount < MIN_LENGTH ? 'text-red-400' : charCount >= MIN_LENGTH ? 'text-emerald-400' : 'text-slate-500'
 
   async function checkHealth() {
     if (!BRIDGE_URL) return
@@ -198,7 +193,7 @@ export default function LinkedInTab({ clientId, initialInputs, loadError }: Prop
               className="w-full bg-[#0F172A] text-white text-sm rounded-xl px-4 py-3 border border-slate-700/50 focus:outline-none focus:border-[#F59E0B]/60 placeholder-slate-500 resize-none"
             />
             <span className={`absolute bottom-2 right-3 text-xs font-mono ${charCountColor}`}>
-              {charCount} / {MAX_LENGTH}
+              {charCount}
             </span>
           </div>
           {charCount > 0 && charCount < MIN_LENGTH && (

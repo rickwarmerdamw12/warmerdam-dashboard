@@ -7,6 +7,7 @@ import { ClientService, ContentStatus, GscInspection } from '@/types'
 import ServicesSection from './ServicesSection'
 import NieuweContentModal from './NieuweContentModal'
 import MarkGelezenButton from './MarkGelezenButton'
+import LinkedInTab from './LinkedInTab'
 
 const statusTabs: { value: ContentStatus | 'alle'; label: string }[] = [
   { value: 'alle', label: 'Alle' },
@@ -18,6 +19,7 @@ const statusTabs: { value: ContentStatus | 'alle'; label: string }[] = [
 
 const mainTabs = [
   { value: 'content', label: 'Content' },
+  { value: 'linkedin', label: 'LinkedIn' },
   { value: 'seo', label: 'SEO' },
   { value: 'services', label: 'Services' },
   { value: 'blogs', label: 'Blogs' },
@@ -114,6 +116,17 @@ export default async function KlantPage({
       .eq('client_id', id)
       .order('created_at', { ascending: false })
     contactSubmissions = data
+  }
+
+  // LinkedIn tab data
+  let linkedInInputs = null
+  if (activeTab === 'linkedin') {
+    const { data } = await supabase
+      .from('linkedin_input')
+      .select('*')
+      .eq('client_id', id)
+      .order('created_at', { ascending: false })
+    linkedInInputs = data
   }
 
   // SEO tab data — laatste GSC snapshot voor deze klant
@@ -322,6 +335,14 @@ export default async function KlantPage({
               </div>
             )}
           </>
+        )}
+
+        {/* Tab: LinkedIn */}
+        {activeTab === 'linkedin' && (
+          <LinkedInTab
+            clientId={id}
+            initialInputs={linkedInInputs || []}
+          />
         )}
 
         {/* Tab: SEO */}

@@ -29,6 +29,18 @@ export default async function ReviewPage({
     .eq('id', item.client_id)
     .single()
 
+  // Revisiegeschiedenis ophalen (alleen voor LinkedIn posts met linkedin_input_id)
+  let revisionHistory = null
+  if (item.service === 'linkedin_post' && item.linkedin_input_id) {
+    const { data: revisions } = await supabase
+      .from('content_items')
+      .select('id, title, status, created_at, revision_feedback')
+      .eq('linkedin_input_id', item.linkedin_input_id)
+      .eq('service', 'linkedin_post')
+      .order('created_at', { ascending: false })
+    revisionHistory = revisions
+  }
+
   const createdDate = new Date(item.created_at).toLocaleDateString('nl-NL', {
     day: 'numeric',
     month: 'long',
@@ -103,6 +115,36 @@ export default async function ReviewPage({
           </div>
         </div>
 
+        {/* Revisiegeschiedenis (alleen voor LinkedIn) */}
+        {revisionHistory && revisionHistory.length > 1 && (
+          <div className="bg-[#1E293B] rounded-2xl p-5 border border-slate-700/50 mb-6">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Revisiegeschiedenis</p>
+            <div className="space-y-2">
+              {revisionHistory.map((rev, i) => {
+                const isHuidige = rev.id === item.id
+                const datum = new Date(rev.created_at).toLocaleDateString('nl-NL', {
+                  day: 'numeric', month: 'short', year: 'numeric',
+                })
+                return (
+                  <div key={rev.id} className={`flex items-start gap-3 p-3 rounded-xl ${isHuidige ? 'bg-[#F59E0B]/10 border border-[#F59E0B]/20' : 'bg-[#0F172A]/50'}`}>
+                    <span className="text-xs text-slate-500 shrink-0 mt-0.5 w-16">{i === 0 ? 'Nieuwste' : datum}</span>
+                    <div className="flex-1 min-w-0">
+                      {isHuidige ? (
+                        <span className="text-[#F59E0B] text-xs font-medium">Huidige versie</span>
+                      ) : (
+                        <a href={`/review/${rev.id}`} className="text-slate-300 text-xs hover:text-white transition-colors line-clamp-1">{rev.title}</a>
+                      )}
+                      {rev.revision_feedback && (
+                        <p className="text-slate-500 text-xs mt-0.5 line-clamp-1 italic">"{rev.revision_feedback}"</p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <ReviewActions
           itemId={item.id}
@@ -111,6 +153,7 @@ export default async function ReviewPage({
           itemTitle={item.title}
           clientNaam={client?.naam || ''}
           telegramChatId={client?.telegram_chat_id || null}
+          isLinkedIn={item.service === 'linkedin_post'}
         />
       </main>
     </div>

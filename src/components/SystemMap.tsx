@@ -330,6 +330,74 @@ const NODES_INIT = [
   },
   // ─── Externe tools ────────────────────────────────────────────────────────
   {
+    id: 'website-builder',
+    type: 'system',
+    position: { x: -120, y: 40 },
+    data: {
+      label: '$10K Website Builder',
+      subtitle: 'Claude Code + 4-tool stack',
+      icon: '💸',
+      accentColor: '#EC4899',
+      bgColor: 'bg-[#1A0812]',
+      borderColor: 'border-pink-800/60',
+      badge: 'Guide',
+      items: [
+        'Claude Code + Framer Motion',
+        'UI/UX Pro Max — 50+ stijlen',
+        '21st.dev Magic — 100+ componenten',
+        '/website-builder-setup skill',
+      ],
+      detail: {
+        heading: '$10K Website bouwen met één prompt',
+        tag: 'Claude Code Guide',
+        tagColor: '#EC4899',
+        description:
+          'Volledige websites — layout, animaties, responsive design, copy — in minuten bouwen met Claude Code en drie extra tools. Geen designer nodig, geen developer, geen Figma. Wat vroeger $5.000–$15.000 kostte en 4–8 weken duurde, doe je nu in één sessie.',
+        sections: [
+          {
+            title: 'De 4-tool stack',
+            items: [
+              'Claude Code — schrijft de volledige website file by file vanuit één prompt',
+              'Framer Motion — echte animaties: pagina-overgangen, hover effects, scroll reveals',
+              'UI/UX Pro Max — design skill met 50+ stijlen, 161 kleurpaletten, 57 fontcombinaties (voorkomt generieke AI-output)',
+              '21st.dev Magic — bibliotheek van 100+ kant-en-klare React componenten',
+            ],
+          },
+          {
+            title: 'Setup in 5 minuten',
+            items: [
+              '① Zorg dat Claude Code geïnstalleerd is (docs.anthropic.com/en/docs/claude-code)',
+              '② Open Claude Code en zeg: "Install this skill for me: https://github.com/tenfoldmarc/website-builder-setup"',
+              '③ Claude installeert de skill automatisch',
+              '④ Type: /website-builder-setup',
+              '⑤ Claude installeert UI/UX Pro Max, Framer Motion en 21st.dev Magic stap voor stap',
+            ],
+          },
+          {
+            title: 'Hoe het werkt in de praktijk',
+            items: [
+              'Open terminal → vertel Claude wat je bedrijf doet, voor wie en welke sfeer',
+              'Claude bouwt alles: layout, copy, animaties, responsive design',
+              'Geen Figma, geen wireframes, geen "logo groter" e-mails',
+              'Live preview in minuten — aanpassen? Gewoon zeggen wat je wil',
+              'Mensen herbouwen complete Framer sites in één dag met deze workflow',
+            ],
+          },
+          {
+            title: 'Waarom dit werkt',
+            items: [
+              'De barrière is geen technische kennis — het is geloof dat het zo simpel kan',
+              'De mensen die dit nu gebruiken zijn geen developers — het zijn ondernemers',
+              'Vijf jaar geleden was dit onmogelijk. Nu niet meer.',
+            ],
+          },
+        ],
+        footer:
+          'Skill installeren: zeg tegen Claude Code "Install this skill for me: https://github.com/tenfoldmarc/website-builder-setup" · Daarna /website-builder-setup uitvoeren',
+      },
+    },
+  },
+  {
     id: 'ai-website-cloner',
     type: 'system',
     position: { x: -120, y: 300 },

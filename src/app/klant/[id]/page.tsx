@@ -120,12 +120,17 @@ export default async function KlantPage({
 
   // LinkedIn tab data
   let linkedInInputs = null
+  let linkedInLoadError = false
   if (activeTab === 'linkedin') {
-    const { data } = await supabase
+    const { data, error: liError } = await supabase
       .from('linkedin_input')
       .select('*')
       .eq('client_id', id)
       .order('created_at', { ascending: false })
+    if (liError) {
+      console.error(`[klant/${id}] linkedin_input query failed:`, liError.message)
+      linkedInLoadError = true
+    }
     linkedInInputs = data
   }
 
@@ -342,6 +347,7 @@ export default async function KlantPage({
           <LinkedInTab
             clientId={id}
             initialInputs={linkedInInputs || []}
+            loadError={linkedInLoadError}
           />
         )}
 
